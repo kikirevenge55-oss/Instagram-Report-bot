@@ -140,12 +140,8 @@ def escape_markdown_v2(text):
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.chat.id
-    if not is_user_in_channel(user_id):
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.add(telebot.types.InlineKeyboardButton("Join Channel", url=f"https://t.me/{FORCE_JOIN_CHANNEL}"))
-        markup.add(telebot.types.InlineKeyboardButton("Joined", callback_data='reload'))
-        bot.reply_to(message, f"Please join @{FORCE_JOIN_CHANNEL} to use this bot.", reply_markup=markup)
-        return
+    def is_user_in_channel(user_id):
+        return True
 
     add_user(user_id)  # Add user to the list
     markup = telebot.types.InlineKeyboardMarkup()
@@ -276,9 +272,9 @@ def help_callback(call):
 if __name__ == "__main__":
     print("Starting the bot...")
     logging.info("Bot started.")
-    
-    # Start the bot polling in a separate thread
-    t = Thread(target=bot.polling)
-    t.start()
+
+    bot.remove_webhook()
+    bot.infinity_polling(skip_pending=True)
+
 
 
