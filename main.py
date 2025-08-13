@@ -147,11 +147,56 @@ def start(message):
 
 @bot.message_handler(commands=['getmeth'])
 def analyze(message):
-    user_id = message.chat.id
-    if not is_user_in_channel(user_id):
-        bot.reply_to(message, f"Please join @{FORCE_JOIN_CHANNEL} to use this bot.")
-        return
+    try:
+        user_id = message.chat.id
 
+        # gate is disabled; won’t block
+        if not is_user_in_channel(user_id):
+            bot.reply_to(message, f"Please join @{FORCE_JOIN_CHANNEL} to use this bot.")
+            return
+
+        parts = message.text.split()
+        if len(parts) < 2:
+            bot.reply_to(message, "Usage: /getmeth username  (no @, no < >)")
+            return
+
+        username = parts[1]
+        bot.reply_to(message, f"🔍 Scanning Your Target Profile: {username}. Please wait...")
+
+        profile_info = get_public_instagram_info(username)
+        if not profile_info:
+            bot.reply_to(message, f"❌ Profile {username} not found or an error occurred.")
+            return
+
+        reports_to_file = analyze_profile(profile_info)
+        result_text = (
+            f"**Public Information for {username}:**\n"
+            f"Username: {profile_info.get('username', 'N/A')}\n"
+            f"Full Name: {profile_info.get('full_name', 'N/A')}\n"
+            f"Biography: {profile_info.get('biography', 'N/A')}\n"
+            f"Followers: {profile_info.get('follower_count', 'N/A')}\n"
+            f"Following: {profile_info.get('following_count', 'N/A')}\n"
+            f"Private Account: {'Yes' if profile_info.get('is_private') else 'No'}\n"
+            f"Posts: {profile_info.get('post_count', 'N/A')}\n"
+            f"External URL: {profile_info.get('external_url', 'N/A')}\n\n"
+            "Suggested Reports for Your Target:\n"
+        )
+        for report in reports_to_file.values():
+            result_text += f"• {report}\n"
+        result_text += "\n*Note: This method is based on available data and may not be fully accurate.*\n"
+
+        result_text = escape_markdown_v2(result_text)
+
+        markup = telebot.types.InlineKeyboardMarkup()
+        markup.add(telebot.types.InlineKeyboardButton(
+            "Visit Target Profile", url=f"https://instagram.com/{profile_info['username']}"
+        ))
+        markup.add(telebot.types.InlineKeyboardButton("Developer", url='t.me/focro'))
+
+        bot.send_message(message.chat.id, result_text, reply_markup=markup, parse_mode='MarkdownV2')
+    except Exception as e:
+        logging.exception(f"/getmeth failed: {e}")
+        bot.reply_to(message, "⚠️ Error running /getmeth. Try another username or try again in a minute.")
     username = message.text.split()[1:]  # Get username from command
     if not username:
         bot.reply_to(message, "😾 Worong method Please send like this /getmeth Username without @ & < >  Send your Target username.")
@@ -271,6 +316,7 @@ if __name__ == "__main__":
 
     bot.remove_webhook()
     bot.infinity_polling(skip_pending=True)
+
 
 
 
