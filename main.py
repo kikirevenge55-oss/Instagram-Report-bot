@@ -119,11 +119,7 @@ def get_public_instagram_info(username):
         return None
 
 def is_user_in_channel(user_id):
-    try:
-        member = bot.get_chat_member(f"@{FORCE_JOIN_CHANNEL}", user_id)
-        return member.status in ['member', 'administrator', 'creator']
-    except telebot.apihelper.ApiTelegramException:
-        return False
+    return True
 
 def escape_markdown_v2(text):
     # Escape special MarkdownV2 characters
@@ -275,6 +271,7 @@ if __name__ == "__main__":
 
     bot.remove_webhook()
     bot.infinity_polling(skip_pending=True)
+
 
 
 
