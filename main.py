@@ -10,8 +10,9 @@ import instaloader
 from flask import Flask
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables from .env file if present (local dev only)
+if os.path.exists(".env"):
+    load_dotenv()
 
 # Configure logging
 logging.basicConfig(filename='bot.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -279,4 +280,5 @@ if __name__ == "__main__":
     # Start the bot polling in a separate thread
     t = Thread(target=bot.polling)
     t.start()
+
 
