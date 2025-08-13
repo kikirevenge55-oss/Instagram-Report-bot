@@ -24,8 +24,9 @@ def home():
     return "I'm alive"
 
 def run_flask_app():
-    app.run(host='0.0.0.0', port=8080)
-
+    port = int(os.environ.get("PORT", 8080))  # Use Koyeb's assigned port
+    app.run(host='0.0.0.0', port=port)
+    
 def keep_alive():
     t = Thread(target=run_flask_app)
     t.start()
@@ -278,3 +279,4 @@ if __name__ == "__main__":
     # Start the bot polling in a separate thread
     t = Thread(target=bot.polling)
     t.start()
+
